@@ -1,0 +1,36 @@
+with 
+income_o_total as (
+    select
+        point,
+        date,
+        sum(inc) over (partition by point, date) as inc_total
+    from
+        income_o
+),
+outcome_o_total as (
+    select
+        point,
+        date,
+        sum(out) over (partition by point, date) as out_total
+    from
+        outcome_o
+)
+select
+    income_o_total.point,
+    income_o_total.date,
+    inc_total,
+    out_total
+from
+     income_o_total left join outcome_o_total
+     on income_o_total.point = outcome_o_total.point and income_o_total.date = outcome_o_total.date
+where income_o_total.point is not NULL
+union
+select
+    income_o_total.point,
+    income_o_total.date,
+    inc_total,
+    out_total
+from
+     income_o_total right join outcome_o_total
+     on income_o_total.point = outcome_o_total.point and income_o_total.date = outcome_o_total.date
+where outcome_o_total.point is not NULL;
